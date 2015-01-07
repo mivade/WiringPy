@@ -1,4 +1,6 @@
 *~
+include/*.xml
+include/wiringPi*.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
