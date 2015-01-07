@@ -14,7 +14,7 @@ for include in includes:
     prefix = include.split('.')[0]
     try:
         subprocess.check_call(
-            ['h2xml', include, '-I.', '-o%s.xml' % prefix])
+            ['h2xml', include, '-I.', '-c', '-o%s.xml' % prefix])
     except subprocess.CalledProcessError:
         print('h2xml failed for ' + include)
         continue

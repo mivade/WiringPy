@@ -7,10 +7,26 @@ using the GPIO pins on `Raspberry Pis`_. It is intended to replace
 only a thin wrapper using SWIG_ and contains very limited
 documentation.
 
+One of the goals of WiringPy is to be a more Pythonic wrapper, and so
+function names are often different from the base WiringPi C function
+names. In most cases, this just involves replacing camel case with
+underscores, so for example, ``pinMode`` in the C version is
+``pin_mode`` here.
+
 .. _WiringPi: http://wiringpi.com/
 .. _Raspberry Pis: http://www.raspberrypi.org/
 .. _WiringPi2-Python: https://github.com/WiringPi/WiringPi2-Python
 .. _SWIG: http://www.swig.org/
+
+TODO
+----
+
+This is very much a work in progress. Things still to do (in no
+particular order):
+
+* Implement additional libraries (e.g., I2C, SPI, etc.)
+* Full Sphinx documentation
+* Unit testing
 
 License
 -------
