@@ -14,13 +14,8 @@ __version__ = '0.1.0'
 class WiringPyError(Exception):
     pass
 
-# Basic setup
+# Internal utility functions
 # -----------------------------------------------------------------------------
-    
-try:
-    _dll = ctypes.CDLL('libwiringPi.so.2.0')
-except OSError:
-    raise RuntimeError('WiringPi not found. Please install it.')
 
 def _chk(cmd):
     """Simple checking of a command that should return 0."""
@@ -28,6 +23,24 @@ def _chk(cmd):
         return
     else:
         raise WiringPyError("Error executing command. Return code: " + cmd)
+
+def _check_pin(pin):
+    """Check that a pin number is valid."""
+    # TODO: proper checking
+    assert isinstance(pin, int)
+
+def _check_mode(mode):
+    """Check that a mode number is valid."""
+    # TODO: proper checking
+    assert isinstance(mode, int)
+
+# Basic setup
+# -----------------------------------------------------------------------------
+    
+try:
+    _dll = ctypes.CDLL('libwiringPi.so.2.0')
+except OSError:
+    raise RuntimeError('WiringPi not found. Please install it.')
 
 def setup(scheme='wiringpi'):
     """Initialize GPIO access and set the pin numbering format.
@@ -86,9 +99,8 @@ def pin_mode(pin, mode):
     * ``wiringpy.PWM_TONE_OUTPUT``
 
     """
-    # TODO: proper pin number checking (depending on Pi model, etc.)
-    assert isinstance(pin, int)
-    assert isinstance(mode, int)
+    _check_pin(pin)
+    _check_mode(mode)
     if mode not in [
             'INPUT', 'OUTPUT', 'PWM_OUTPUT', 'GPIO_CLOCK',
             'SOFT_PWM_OUTPUT', 'SOFT_TONE_OUTPUT', 'PWM_TONE_OUTPUT']:
@@ -111,15 +123,104 @@ def pull_up_down_control(pin, pud):
     program.
 
     """
-    # TODO: proper pin number checking (depending on Pi model, etc.)
-    assert isinstance(pin, int)
+    _check_pin(pin)
     assert isinstance(pud, int)
     _dll.pullUpDnControl(pin, pud)
 
-def digital_write(pin, value):
-    """Set a digital value."""
-
 def digital_read(pin):
-    """Read a digital pin."""
+    """This function returns the value read at the given pin. It will
+    be HIGH or LOW (1 or 0) depending on the logic level at the
+    pin.
 
-    
+    Parameters
+    ----------
+    pin : int
+        Pin number to read.
+
+    """
+    _check_pin(pin)
+    return _dll.digitalRead(pin)
+
+def digital_write(pin, value):
+    """Writes the value HIGH or LOW (1 or 0) to the given pin which
+    must have been previously set as an output.
+
+    Parameters
+    ----------
+    pin : int
+        Pin number to write to.
+    value : int or bool
+        Digital value to write.
+
+    Notes
+    -----
+    WiringPi treats any non-zero number as HIGH, however 0 is the only
+    representation of LOW.
+
+    """
+    _check_pin(pin)
+    assert isinstance(value, (int, bool))
+    _dll.digitalWrite(pin, value)
+
+def pwm_write(pin, value):
+    """Writes the value to the PWM register for the given pin.
+
+    Parameters
+    ----------
+    pin : int
+        Pin number to write to.
+    value : int or bool
+        PWM value to write.
+
+    Notes
+    -----
+    The Raspberry Pi has one on-board PWM pin, WiringPi pin 1
+    (BMC_GPIO 18, Phys 12) and the range is 0-1024. Other PWM devices
+    may have other PWM ranges.
+
+    This function is not able to control the Pi’s on-board PWM when in
+    Sys mode.
+
+    """
+    _check_pin(pin)
+    assert isinstance(value, int)
+    assert 0 <= value <= 1024
+    _dll.pwmWrite(pin, value)
+
+def analog_read(pin):
+    """Read the supplied analog input pin.
+
+    Parameters
+    ----------
+    pin : int
+        Pin number to read from.
+
+    Notes
+    -----
+    You will need to register additional analog modules to enable this
+    function for devices such as the Gertboard, quick2Wire analog
+    board, etc.
+
+    """
+    _check_pin(pin)
+    return _dll.analogRead(pin)
+
+def analog_write(pin, value):
+    """Write the given value to the supplied analog pin.
+
+    Parameters
+    ----------
+    pin : int
+        Pin number to write to.
+    value : int or bool
+        Analog value to write.    
+
+    Notes
+    -----
+    You will need to register additional analog modules to enable this
+    function for devices such as the Gertboard.
+
+    """
+    _check_pin(pin)
+    assert isinstance(value, int)
+    _dll.analogWrite(pin, value)
